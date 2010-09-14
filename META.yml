@@ -1,0 +1,40 @@
+---
+abstract: 'A class based representation of an InterMine DB schema'
+author:
+  - 'Alex Kalderimis <dev@intermine.org>'
+build_requires:
+  Test::Exception: 0
+  Test::More: 0
+configure_requires:
+  Module::Build: 0.36
+generated_by: 'Module::Build version 0.3607'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: InterMine-Model
+provides:
+  InterMine::Model:
+    file: lib/InterMine/Model.pm
+    version: 0.94
+  InterMine::Model::Attribute:
+    file: lib/InterMine/Model/Attribute.pm
+  InterMine::Model::ClassDescriptor:
+    file: lib/InterMine/Model/ClassDescriptor.pm
+  InterMine::Model::Collection:
+    file: lib/InterMine/Model/Collection.pm
+  InterMine::Model::Handler:
+    file: lib/InterMine/Model.pm
+  InterMine::Model::Reference:
+    file: lib/InterMine/Model/Reference.pm
+  InterMine::Model::Role::Field:
+    file: lib/InterMine/Model/Role/Field.pm
+requires:
+  InterMine::TypeLibrary: 0.1
+  Moose: 0.95
+  MooseX::Types: 0
+  XML::Parser::PerlSAX: 0.08
+  perl: v5.8.3
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.94
