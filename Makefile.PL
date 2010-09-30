@@ -8,6 +8,7 @@ WriteMakefile
           'PREREQ_PM' => {
                            'InterMine::TypeLibrary' => '0.1',
                            'Moose' => '0.95',
+                           'MooseX::Role::WithOverloading' => 0,
                            'MooseX::Types' => 0,
                            'Test::Exception' => 0,
                            'Test::More' => 0,

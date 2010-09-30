@@ -16,7 +16,7 @@ name: InterMine-Model
 provides:
   InterMine::Model:
     file: lib/InterMine/Model.pm
-    version: 0.94
+    version: 0.9401
   InterMine::Model::Attribute:
     file: lib/InterMine/Model/Attribute.pm
   InterMine::Model::ClassDescriptor:
@@ -27,14 +27,17 @@ provides:
     file: lib/InterMine/Model.pm
   InterMine::Model::Reference:
     file: lib/InterMine/Model/Reference.pm
+  InterMine::Model::Role::Descriptor:
+    file: lib/InterMine/Model/Role/Descriptor.pm
   InterMine::Model::Role::Field:
     file: lib/InterMine/Model/Role/Field.pm
 requires:
   InterMine::TypeLibrary: 0.1
   Moose: 0.95
+  MooseX::Role::WithOverloading: 0
   MooseX::Types: 0
   XML::Parser::PerlSAX: 0.08
   perl: v5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.94
+version: 0.9401
