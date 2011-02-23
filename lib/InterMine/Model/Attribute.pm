@@ -108,7 +108,7 @@ sub _get_moose_type {
 sub _get_moose_options {
     my $self = shift;
     my @options = (isa => $self->_get_moose_type);
-    if (lc($self->attribute_type) eq 'long') {
+    if ($self->attribute_type =~ /^(?:long|boolean)$/i) {
         push @options, (coerce => 1);
     }
     return @options;

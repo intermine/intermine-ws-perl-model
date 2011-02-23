@@ -4,7 +4,7 @@ package InterMine::Model::Types;
 # Declare Our Own Types
 use MooseX::Types -declare => ["ISO8601DateStamp"];
 
-use MooseX::Types::Moose qw/Str/;
+use MooseX::Types::Moose qw/Str Bool Object/;
 
 subtype ISO8601DateStamp, as Str, 
     where {/ 
@@ -13,6 +13,8 @@ subtype ISO8601DateStamp, as Str,
             ([01][0-9]|2[0-4]) : [0-5][0-9] : [0-5][0-9]
             /x}, 
     message {"Value provided ('$_') was not in the ISO8601 time stamp format"};
+
+coerce Bool, from Object, via {$$_};
 
 1;
 

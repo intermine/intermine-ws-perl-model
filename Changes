@@ -10,4 +10,7 @@ Revision history for InterMine-Model
         * ClassDescriptors are now Moose::Meta::Classes too - 
         allowing direct instantiation of their objects.
         * The attributes of instantiated objects are type-safe
+0.9601  Wed Feb 23 16:27:05 GMT 2011
+        * Weaken is no longer necessary: it causes warnings.
+        * Finally activated the boilerplate text
 

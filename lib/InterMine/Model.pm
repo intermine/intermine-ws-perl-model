@@ -44,7 +44,6 @@ sub start_element {
                 model   => $model,
                 parents => [@parents]
             );
-            weaken( $self->{current_class}->{model} );
         }
         else {
             my $field;
@@ -99,7 +98,7 @@ sub end_element {
 
 package InterMine::Model;
 
-our $VERSION = '0.9600';
+our $VERSION = '0.9601';
 
 =head1 NAME
 
