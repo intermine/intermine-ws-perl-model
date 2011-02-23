@@ -39,9 +39,9 @@ sub start_element {
                 # strip off any preceding class path (eg. "org.intermine.")
                 map { s/.*\.(.*)/$1/ } @parents;
             }
-            $self->{current_class} = new InterMine::Model::ClassDescriptor(
+            $self->{current_class} = InterMine::Model::ClassDescriptor->create(
+                $nameattr,
                 model   => $model,
-                name    => $nameattr,
                 parents => [@parents]
             );
             weaken( $self->{current_class}->{model} );
@@ -99,7 +99,7 @@ sub end_element {
 
 package InterMine::Model;
 
-our $VERSION = '0.9401';
+our $VERSION = '0.9600';
 
 =head1 NAME
 
@@ -108,11 +108,23 @@ InterMine::Model - the representation of an InterMine model
 =head1 SYNOPSIS
 
   use InterMine::Model;
-  use InterMine::ItemFactory;
 
   my $model_file = 'flymine/dbmodel/build/model/genomic_model.xml';
-  my $model = new InterMine::Model(file => $model_file);
-  my $factory = new InterMine::ItemFactory(model => $model);
+  my $model = InterMine::Model->new(file => $model_file);
+  my $gene = $model->make_new(
+    Gene => {
+        primaryIdentifier => "FBgn0004053",
+        secondaryIdentifier => "CG1046",
+        symbol              => "zen",
+        name                => "zerknullt",
+        length              => "3474",
+        organism            => {
+            shortName => "D. melanogaster",
+        }
+        ncbiGeneNumber      => 40828,
+    });
+
+  $gene->getName(); # "zerknullt"
 
   ...
 
@@ -164,6 +176,9 @@ under the same terms as Perl itself.
 
 use strict;
 use Carp qw/confess/;
+use Moose::Util::TypeConstraints;
+
+use constant TYPE_PREFIX => "InterMine";
 
 =head2 new
 
@@ -201,6 +216,7 @@ sub new {
         $self->_process( $opts{string}, 1 );
     }
 
+
     $self->_fix_class_descriptors();
 
     return $self;
@@ -235,16 +251,36 @@ sub _process {
     }
 }
 
+sub _add_type_constraint_and_coercion {
+    my $self = shift;
+    my $class_name = shift;
+
+    subtype $class_name, as "Object", where {$_->isa($class_name)};
+    subtype "ArrayOf" . $class_name, as "ArrayRef[$class_name]";
+    coerce $class_name, from 'HashRef', via {
+        $self->make_new(($_->{class} || $class_name), $_);
+    };
+    subtype "ArrayOfHashes", as "ArrayRef[HashRef]";
+
+    coerce "ArrayOf$class_name", from "ArrayOfHashes", 
+        via { [map {$self->make_new(($_->{class} || $class_name), $_)} @$_] };
+}
+
 # add fields from base classes to sub-classes so that $class_descriptor->fields()
 # returns fields from base classes too
 sub _fix_class_descriptors {
     my $self = shift;
+
+    for my $class_name (keys %{ $self->{class_hash} } ) {
+        $self->_add_type_constraint_and_coercion($class_name);
+    }
 
     while ( my ( $class_name, $cd ) = each %{ $self->{class_hash} } ) {
         my @fields = $self->_get_fields($cd);
         for my $field (@fields) {
             $cd->add_field($field);
         }
+        $cd->_make_fields_into_attributes();
     }
 }
 
@@ -296,6 +332,26 @@ sub get_classdescriptor_by_name {
       || $self->{class_hash}{ $self->{package_name} . $classname };
     confess "$classname not in the model" unless $class;
     return $class;
+}
+
+=head2 make_new($class_name, [%attributes|$attributes])
+
+Return an object of the desired class, with the attributes 
+given
+
+ my $gene = $model->make_new(Gene => {symbol => "zen", organism => {name => 'D. melanogaster}});
+
+ say $gene->get_symbol             # "zen"
+ say $gene->get_organism->get_name # "D. melanogaster"
+
+=cut
+
+sub make_new {
+    my $self = shift;
+    my $name = (ref $_[0] eq 'HASH') ? $_[0]->{class} : shift;
+    my $params = (@_ == 1) ? $_[0] : {@_};
+
+    return $self->get_classdescriptor_by_name($name)->new_object($params);
 }
 
 =head2 get_all_classdescriptors

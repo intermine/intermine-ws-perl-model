@@ -244,6 +244,19 @@ sub is_one_to_0 {
       and not $self->has_reverse_reference);
 }
 
+sub _get_moose_type {
+    my $self = shift;
+    return $self->referenced_type_name;
+}
+
+around '_get_moose_options' => sub {
+    my $orig = shift;
+    my $self = shift;
+    my @ops = $self->$orig(@_);
+    push @ops, (coerce => 1);
+    return @ops;
+};
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 

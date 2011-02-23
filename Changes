@@ -6,3 +6,8 @@ Revision history for InterMine-Model
 0.9401  Sun Sep 26 13:54:14 BST 2010
         Descriptors now have overloaded string representation: $_->name
 
+0.9600  Tue Feb 22 18:07:12 GMT 2011
+        * ClassDescriptors are now Moose::Meta::Classes too - 
+        allowing direct instantiation of their objects.
+        * The attributes of instantiated objects are type-safe
+

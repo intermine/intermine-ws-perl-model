@@ -35,7 +35,7 @@
         <reference name="company" referenced-type="Company" reverse-reference="departments"/>
         <reference name="manager" referenced-type="Manager"/>
         <collection name="employees" referenced-type="Employee" reverse-reference="department"/>
-        <collection name="rejectedEmployee" referenced-type="Employee" reverse-reference="departmentThatRejectedMe"/>
+        <collection name="rejectedEmployees" referenced-type="Employee" reverse-reference="departmentThatRejectedMe"/>
     </class>
     <class name="Company" extends="RandomInterface HasAddress HasSecretarys" is-interface="true">
         <attribute name="name" type="java.lang.String"/>

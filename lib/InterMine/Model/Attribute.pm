@@ -59,7 +59,9 @@ with (
     'InterMine::Model::Role::Field',
 );
 
-use MooseX::Types::Moose qw(Str);
+use MooseX::Types::Moose qw(Str Int Num Bool);
+use InterMine::TypeLibrary qw(BigInt);
+use InterMine::Model::Types qw(ISO8601DateStamp);
 
 has type => (
     reader   => '_type',
@@ -80,6 +82,36 @@ sub attribute_type {
     my $value = $self->_type;
     $value =~ s/.*\.//;
     return $value;
+}
+
+my %moose_translation_for = (
+    string  => Str,
+    short   => Int,
+    integer => Int,
+    int     => Int,
+    long    => BigInt,
+    double  => Num,
+    float   => Num,
+    boolean => Bool,
+    date    => ISO8601DateStamp,
+);
+
+sub _get_moose_type {
+    my $self = shift;
+    if (exists $moose_translation_for{lc($self->attribute_type)}) {
+        return $moose_translation_for{lc($self->attribute_type)};
+    } else {
+        return 'Value'; # The broadest possible scalar type
+    }
+}
+
+sub _get_moose_options {
+    my $self = shift;
+    my @options = (isa => $self->_get_moose_type);
+    if (lc($self->attribute_type) eq 'long') {
+        push @options, (coerce => 1);
+    }
+    return @options;
 }
 
 __PACKAGE__->meta->make_immutable;

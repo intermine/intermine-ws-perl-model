@@ -66,6 +66,9 @@ package InterMine::Model::Role::Field;
 use Moose::Role;
 
 use InterMine::TypeLibrary qw(ClassDescriptor);
+use Scalar::Util qw(refaddr);
+
+requires '_get_moose_type';
 
 =head2 field_class
 
@@ -79,6 +82,25 @@ has field_class => (
     is	     => 'rw',
     isa	     => ClassDescriptor,
 );
+
+sub _get_moose_options {
+    my $self = shift;
+    return (isa => $self->_get_moose_type);
+}
+
+sub _type_is {
+    my $self = shift;
+    my $something = shift;
+    if (refaddr($something)) {
+        return (
+            refaddr($self->_get_moose_type)
+            && 
+            refaddr($something) == refaddr($self->_get_moose_type)
+        );
+    } else {
+        return ($something eq $self->_get_moose_type);
+    }
+}
 
 no Moose;
 

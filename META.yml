@@ -7,7 +7,7 @@ build_requires:
   Test::More: 0
 configure_requires:
   Module::Build: 0.36
-generated_by: 'Module::Build version 0.3607'
+generated_by: 'Module::Build version 0.3624'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -16,7 +16,7 @@ name: InterMine-Model
 provides:
   InterMine::Model:
     file: lib/InterMine/Model.pm
-    version: 0.9401
+    version: 0.9600
   InterMine::Model::Attribute:
     file: lib/InterMine/Model/Attribute.pm
   InterMine::Model::ClassDescriptor:
@@ -31,13 +31,18 @@ provides:
     file: lib/InterMine/Model/Role/Descriptor.pm
   InterMine::Model::Role::Field:
     file: lib/InterMine/Model/Role/Field.pm
+  InterMine::Model::Types:
+    file: lib/InterMine/Model/Types.pm
 requires:
-  InterMine::TypeLibrary: 0.1
+  Carp: 0
+  InterMine::TypeLibrary: 0.9600
   Moose: 0.95
+  Moose::Util::TypeConstraints: 0
   MooseX::Role::WithOverloading: 0
   MooseX::Types: 0
+  Scalar::Util: 0
   XML::Parser::PerlSAX: 0.08
   perl: v5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.9401
+version: 0.9600
