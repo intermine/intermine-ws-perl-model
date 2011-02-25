@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More tests => 15;
 use Test::Exception;
 
 use InterMine::Model;
@@ -30,6 +30,24 @@ ok($comp_cd->valid_field('secretarys'));
 is($comp_cd->get_field_by_name('secretarys')->referenced_classdescriptor()->name(),
    'Secretary');
 
+is_deeply(
+    [sort $comp_cd->attributes],
+    [qw/name vatNumber/],
+    "Gets attributes correctly",
+);
+
+is_deeply(
+    [sort $comp_cd->references],
+    [qw/CEO address/],
+    "Gets references correctly",
+);
+
+is_deeply(
+    [sort $comp_cd->collections],
+    [qw /contractors departments oldContracts secretarys/],
+    "Gets collections correctly",
+);
+
 ok($model->get_classdescriptor_by_name('Manager')->sub_class_of($emp_cd), 'Subclasses');
 
 # from this class
@@ -39,3 +57,9 @@ is($comp_cd->get_field_by_name('departments')->referenced_classdescriptor()->nam
    'Department');
 
 is(scalar($comp_cd->fields()), 8);
+
+is_deeply(
+    [$model->get_classdescriptor_by_name("Manager")->get_ancestors],
+    [qw/Manager Employee Employable Thing HasAddress ImportantPerson/],
+    "Gets the correct inheritance list",
+);

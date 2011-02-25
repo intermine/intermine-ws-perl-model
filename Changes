@@ -12,5 +12,14 @@ Revision history for InterMine-Model
         * The attributes of instantiated objects are type-safe
 0.9601  Wed Feb 23 16:27:05 GMT 2011
         * Weaken is no longer necessary: it causes warnings.
-        * Finally activated the boilerplate text
+        * Finally activated the boilerplate tests
+0.9602  Fri Feb 25 21:00:08 GMT 2011
+        * More documentation
+        * ClassDescriptor->references no longer includes Collections
+        * silenced JSON::Boolean coercion warning with horrible hack
+        * Caching and merging of objects based on objectId - true object identity over graphs
+        * Basic instantiation prototype now an actual class 
+          rather than a bundle of methods (InterMine::Model::Object).
+        * Reimplemented some attributes as methods to save memory
+        * Weakened some circular references to prevent leaks
 

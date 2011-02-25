@@ -6,20 +6,31 @@ use warnings;
 use Test::More tests => 3;
 use Test::Exception;
 
+use Scalar::Util qw(refaddr);
+
 use InterMine::Model;
 
 my $model = InterMine::Model->new(file => 't/data/testmodel_model.xml');
 
-
 subtest "Test instantiation" => sub {
-    plan tests => 5;
+    plan tests => 9;
     note "Testing instantiation";
 
     lives_ok {$model->make_new("Company")} "Can make objects";
 
-    my $emp;
+    my ($emp, $emp2);
     lives_ok {$emp = $model->make_new(Employee => (name => "John", age => 24))} 
         "Can make an object with a list";
+
+    lives_ok {$emp2 = $model->make_new(Employee => (name => "John", age => 24, department => undef))} 
+        "Can ignore empty (undef) values";
+
+    my $emp3 = $model->make_new(Employee => (name => "Bill", objectId => 12345));
+    my $emp4 = $model->make_new(Employee => (age => 17, objectId => 12345));
+
+    is(refaddr($emp3), refaddr($emp4), "The obj is returned from cache if seen before");
+    is($emp3->getAge, 17, "And the new fields are merged in");
+    is($emp4->getName, "Bill", "And the old fields remain");
 
     is($emp->getName, "John", "who has the right name");
 

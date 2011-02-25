@@ -23,4 +23,5 @@ my $build = Module::Build->new(
         'Test::More'      => 0,
     },
 );
+$build->add_build_element('xml');
 $build->create_build_script;

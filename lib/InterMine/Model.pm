@@ -1,7 +1,6 @@
 package InterMine::Model::Handler;
 
 use Carp qw/confess/;
-use Scalar::Util qw(weaken);
 
 use InterMine::Model::Attribute;
 use InterMine::Model::Reference;
@@ -36,14 +35,16 @@ sub start_element {
                 @parents = split /\s+/, $args->{Attributes}{extends};
                 @parents = grep { $_ ne 'java.lang.Object' } @parents;
 
-                # strip off any preceding class path (eg. "org.intermine.")
+                # strip off any preceding package (eg. "org.intermine.")
                 map { s/.*\.(.*)/$1/ } @parents;
             }
-            $self->{current_class} = InterMine::Model::ClassDescriptor->create(
+            my $cd = InterMine::Model::ClassDescriptor->create(
                 $nameattr,
                 model   => $model,
-                parents => [@parents]
+                parents => [@parents],
             );
+            $model->{class_hash}{$nameattr} = $cd;
+            $self->{current_class} = $cd;
         }
         else {
             my $field;
@@ -56,9 +57,10 @@ sub start_element {
                 );
             }
             else {
-                my $referenced_type = $args->{Attributes}{'referenced-type'};
-                my $reverse_reference =
-                  $args->{Attributes}{'reverse-reference'};
+                my $referenced_type 
+                    = $args->{Attributes}{'referenced-type'};
+                my $reverse_reference 
+                    = $args->{Attributes}{'reverse-reference'};
 
                 my %args = (
                     name                 => $nameattr,
@@ -79,7 +81,6 @@ sub start_element {
                 }
 
             }
-            $field->field_class( $self->{current_class} );
             $self->{current_class}->add_field( $field, 'own' );
         }
     }
@@ -89,7 +90,6 @@ sub end_element {
     my $self = shift;
     my $args = shift;
     if ( $args->{Name} eq 'class' ) {
-        push @{ $self->{classes} }, $self->{current_class};
         $self->{current_class} = undef;
     }
 }
@@ -98,7 +98,7 @@ sub end_element {
 
 package InterMine::Model;
 
-our $VERSION = '0.9601';
+our $VERSION = '0.9602';
 
 =head1 NAME
 
@@ -138,37 +138,6 @@ name.
 For an example model see:
 http://trac.flymine.org/browser/trunk/intermine/objectstore/model/testmodel/testmodel_model.xml
 
-=head1 AUTHOR
-
-FlyMine C<< <support@flymine.org> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to C<support@flymine.org>.
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc InterMine::Model;
-
-You can also look for information at:
-
-=over 4
-
-=item * FlyMine
-
-L<http://www.flymine.org>
-
-=back
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006,2007,2008,2009 FlyMine, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
 =head1 FUNCTIONS
 
 =cut
@@ -203,6 +172,7 @@ sub new {
     }
 
     $self->{class_hash} = {};
+    $self->{object_cache} = {};
 
     bless $self, $class;
 
@@ -214,7 +184,6 @@ sub new {
     else {
         $self->_process( $opts{string}, 1 );
     }
-
 
     $self->_fix_class_descriptors();
 
@@ -242,12 +211,6 @@ sub _process {
 
     $parser->parse( Source => $source );
 
-    $self->{classes} = $handler->{classes};
-
-    for my $class ( @{ $self->{classes} } ) {
-#        my $classname = $class->name();
-        $self->{class_hash}{$class} = $class;
-    }
 }
 
 sub _add_type_constraint_and_coercion {
@@ -350,7 +313,18 @@ sub make_new {
     my $name = (ref $_[0] eq 'HASH') ? $_[0]->{class} : shift;
     my $params = (@_ == 1) ? $_[0] : {@_};
 
-    return $self->get_classdescriptor_by_name($name)->new_object($params);
+    my $obj = $self->get_classdescriptor_by_name($name)->new_object($params);
+
+    if ($obj->hasObjectId) {
+        if (my $existing = $self->{object_cache}{$obj->getObjectId}) {
+            $existing->merge($obj);
+            return $existing;
+        } else {
+            $self->{object_cache}{$obj->getObjectId} = $obj;
+        }
+    } else {
+        return $obj;
+    }
 }
 
 =head2 get_all_classdescriptors
@@ -391,7 +365,7 @@ sub get_referenced_classdescriptor {
     return undef;
 }
 
-=head2 find_classes_declaring_field
+=head2 find_classes_declaring_field( $name )
 
  Usage    : my @classes = $model->find_classes_declaring_field($str);
  Function : get the class descriptors that declare fields of a certain name  
@@ -441,3 +415,35 @@ sub model_name {
 }
 
 1;
+
+=head1 AUTHOR
+
+FlyMine C<< <support@flymine.org> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to C<support@flymine.org>.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc InterMine::Model
+
+You can also look for information at:
+
+=over 4
+
+=item * FlyMine
+
+L<http://www.flymine.org>
+
+=back
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006,2007,2008,2009, 2010, 2011 FlyMine, all rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+

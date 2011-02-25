@@ -59,7 +59,7 @@ with (
     'InterMine::Model::Role::Field',
 );
 
-use MooseX::Types::Moose qw(Str Int Num Bool);
+use MooseX::Types::Moose qw(Str Int Num Bool Value);
 use InterMine::TypeLibrary qw(BigInt);
 use InterMine::Model::Types qw(ISO8601DateStamp);
 
@@ -98,10 +98,11 @@ my %moose_translation_for = (
 
 sub _get_moose_type {
     my $self = shift;
-    if (exists $moose_translation_for{lc($self->attribute_type)}) {
-        return $moose_translation_for{lc($self->attribute_type)};
+    my $type = lc($self->attribute_type);
+    if (exists $moose_translation_for{$type}) {
+        return $moose_translation_for{$type};
     } else {
-        return 'Value'; # The broadest possible scalar type
+        return Value; # The broadest possible scalar type
     }
 }
 

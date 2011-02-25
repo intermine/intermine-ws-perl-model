@@ -81,6 +81,7 @@ requires '_get_moose_type';
 has field_class => (
     is	     => 'rw',
     isa	     => ClassDescriptor,
+    weak_ref => 1,
 );
 
 sub _get_moose_options {

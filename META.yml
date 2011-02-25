@@ -16,7 +16,7 @@ name: InterMine-Model
 provides:
   InterMine::Model:
     file: lib/InterMine/Model.pm
-    version: 0.9601
+    version: 0.9602
   InterMine::Model::Attribute:
     file: lib/InterMine/Model/Attribute.pm
   InterMine::Model::ClassDescriptor:
@@ -25,12 +25,16 @@ provides:
     file: lib/InterMine/Model/Collection.pm
   InterMine::Model::Handler:
     file: lib/InterMine/Model.pm
+  InterMine::Model::Object:
+    file: lib/InterMine/Model/Object.pm
   InterMine::Model::Reference:
     file: lib/InterMine/Model/Reference.pm
   InterMine::Model::Role::Descriptor:
     file: lib/InterMine/Model/Role/Descriptor.pm
   InterMine::Model::Role::Field:
     file: lib/InterMine/Model/Role/Field.pm
+  InterMine::Model::TestModel:
+    file: lib/InterMine/Model/TestModel.pm
   InterMine::Model::Types:
     file: lib/InterMine/Model/Types.pm
 requires:
@@ -45,4 +49,4 @@ requires:
   perl: v5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.9601
+version: 0.9602
