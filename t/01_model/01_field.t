@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 30;
+use Test::More tests => 31;
 
 use InterMine::Model;
 
@@ -27,7 +27,9 @@ ok($name_field->isa('InterMine::Model::Attribute'));               # Test 2
 ok($department_company_field->isa('InterMine::Model::Reference')); # Test 3
 ok($employees_field->isa('InterMine::Model::Collection'));         # Test 4
 
-is($department_company_field->field_class->name, "Department", 
+is($department_company_field->field_class->unqualified_name, "Department", 
+    "Field has a reference to the class");
+is($department_company_field->class_name, "Department", 
     "Field has a reference to the class");
 
 my @fields = ($department_company_field, $employees_field,

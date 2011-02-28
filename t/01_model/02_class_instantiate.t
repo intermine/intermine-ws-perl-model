@@ -13,7 +13,7 @@ use InterMine::Model;
 my $model = InterMine::Model->new(file => 't/data/testmodel_model.xml');
 
 subtest "Test instantiation" => sub {
-    plan tests => 9;
+    plan tests => 11;
     note "Testing instantiation";
 
     lives_ok {$model->make_new("Company")} "Can make objects";
@@ -27,6 +27,10 @@ subtest "Test instantiation" => sub {
 
     my $emp3 = $model->make_new(Employee => (name => "Bill", objectId => 12345));
     my $emp4 = $model->make_new(Employee => (age => 17, objectId => 12345));
+
+    my $manager = $model->make_new("Manager");
+    ok($manager->isa("Manager"), "objects respond to short names in isa");
+    ok($manager->isa("Employee"), "And objects can follow inheritance");
 
     is(refaddr($emp3), refaddr($emp4), "The obj is returned from cache if seen before");
     is($emp3->getAge, 17, "And the new fields are merged in");
@@ -172,7 +176,7 @@ subtest "Test field type constraints" => sub {
         plan tests => 3;
         my $emp = $model->make_new("Employee");
         throws_ok {$emp->setDepartment($model->make_new("Company"))} 
-            qr/Validation failed for 'Department' with value Company/,
+            qr/Validation failed for 'Department' with value InterMine::testmodel::/,
             "and it throws errors when you give it the wrong kind of object";
         lives_ok {
             $emp->setDepartment($model->make_new("Department"));
@@ -255,7 +259,7 @@ subtest "Test type coercion" => sub {
         my $i = 0;
         for my $e ($dep->getEmployees) {
             is($e->getName, $expected_name[$i], "This employee is called $expected_name[$i]");
-            is($e->class->name, $expected_class[$i], "This employee isa $expected_class[$i]");
+            is($e->class, $expected_class[$i], "This employee isa $expected_class[$i]");
             $i++;
         }
     };

@@ -5,7 +5,7 @@ use MooseX::Types::Moose qw(Str);
 
 =head1 NAME
 
-InterMine::Model::Object - the class all instantiate objects inherit from
+InterMine::Model::Object - the class all instantiated objects inherit from
 
 =head1 SYNOPSIS
 
@@ -95,6 +95,23 @@ sub class {
     return $self->meta;
 }
 
+=head2 isa
+
+overrides isa to respond to unqualified names as well as full ones.
+
+=cut
+
+sub isa {
+    my $self = shift;
+    my $other = shift;
+    my $extended_name = $self->class->model->{perl_package} . $other;
+    if (UNIVERSAL::isa($self, $extended_name)) {
+        return 1;
+    } else {
+        return UNIVERSAL::isa($self, $other);
+    }
+};
+
 =head1 OVERLOADING
 
 =head2 EQUALITY (==, eq)
@@ -109,6 +126,8 @@ use overload (
     fallback => 1,
 );
 
+__PACKAGE__->meta->make_immutable;
+no Moose;
 1;
 
 =head1 SEE ALSO

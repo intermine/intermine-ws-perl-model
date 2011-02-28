@@ -13,7 +13,8 @@ InterMine::Model::Role::Descriptor - Provides the common behaviour of descriptor
 
 use MooseX::Role::WithOverloading;
 use InterMine::TypeLibrary qw(Model);
-use MooseX::Types::Moose qw(Str);
+
+requires 'to_string';
 
 =head1 OVERLOADING
 
@@ -21,10 +22,9 @@ use MooseX::Types::Moose qw(Str);
 
 =item STRINGIFICATION
 
-Descriptors stringify by default to their names
-
-=back
-
+Descriptors must implement a "to_string" method, which is 
+called when string overloading occurs.
+ 
 =cut
 
 use overload (
@@ -32,32 +32,9 @@ use overload (
     fallback => 1,
 );
 
-=head1 METHODS 
-
-=head2 to_string
-
-The string representation of a descriptor, ie. its name
-
-=cut 
-
-sub to_string {
-    my $self = shift;
-    return $self->name;
-}
+=back 
 
 =head1 ATTRIBUTES
-
-=head2 name (Str, ro, required)
-
-The name of the descriptor
-
-=cut 
-
-has name => (
-    is => 'ro',
-    isa => Str,
-    required => 1,
-);
 
 =head2 model (Model, ro, required)
 

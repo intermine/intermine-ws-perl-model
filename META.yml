@@ -16,7 +16,7 @@ name: InterMine-Model
 provides:
   InterMine::Model:
     file: lib/InterMine/Model.pm
-    version: 0.9602
+    version: 0.9603
   InterMine::Model::Attribute:
     file: lib/InterMine/Model/Attribute.pm
   InterMine::Model::ClassDescriptor:
@@ -49,4 +49,4 @@ requires:
   perl: v5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.9602
+version: 0.9603

@@ -1,5 +1,47 @@
 package InterMine::Model::Handler;
 
+=head1 NAME
+
+InterMine::Model::Handler - The SAX handler for reading in a model
+
+=head1 SYNOPSIS
+
+    use InterMine::Model; # you get the handler for free
+    use XML::Parser::PerlSAX;
+
+    my $handler = new InterMine::Model::Handler( model => $self );
+    my $parser = XML::Parser::PerlSAX->new( Handler => $handler );
+
+    my $source;
+
+    if ($source_is_string) {
+        $source = { String => $source_arg };
+    }
+    else {
+        $source = { SystemId => $source_arg };
+    }
+
+    $parser->parse( Source => $source );
+
+=head1 DESCRIPTION
+
+This in a class used internally for processing the xml representation of the model
+that is returned from webservices, and stored as a the model's serialised 
+representation. You will not need to use this class directly.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item * L<XML::Parser::PerlSAX>
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
 use Carp qw/confess/;
 
 use InterMine::Model::Attribute;
@@ -13,6 +55,8 @@ sub new {
 
     return bless $self, $class;
 }
+
+my $serial_no = 00;
 
 sub start_element {
     my $self = shift;
@@ -30,6 +74,8 @@ sub start_element {
     else {
         my $model = $self->{model};
         if ( $args->{Name} eq "class" ) {
+            my $perl_package  = $self->{model}{perl_package} ||= join('::', 
+                "InterMine", $self->{model}{model_name}, ++$serial_no) . '::';
             my @parents = ();
             if ( exists $args->{Attributes}{extends} ) {
                 @parents = split /\s+/, $args->{Attributes}{extends};
@@ -39,9 +85,9 @@ sub start_element {
                 map { s/.*\.(.*)/$1/ } @parents;
             }
             my $cd = InterMine::Model::ClassDescriptor->create(
-                $nameattr,
+                $perl_package . $nameattr,
                 model   => $model,
-                parents => [@parents],
+                parents => [ map {$perl_package . $_} @parents],
             );
             $model->{class_hash}{$nameattr} = $cd;
             $self->{current_class} = $cd;
@@ -98,7 +144,16 @@ sub end_element {
 
 package InterMine::Model;
 
-our $VERSION = '0.9602';
+use strict;
+use warnings;
+
+use Carp qw/confess/;
+use Moose::Util::TypeConstraints;
+use XML::Parser::PerlSAX;
+
+use constant TYPE_PREFIX => "InterMine";
+
+our $VERSION = '0.9603';
 
 =head1 NAME
 
@@ -142,11 +197,6 @@ http://trac.flymine.org/browser/trunk/intermine/objectstore/model/testmodel/test
 
 =cut
 
-use strict;
-use Carp qw/confess/;
-use Moose::Util::TypeConstraints;
-
-use constant TYPE_PREFIX => "InterMine";
 
 =head2 new
 
@@ -190,7 +240,6 @@ sub new {
     return $self;
 }
 
-use XML::Parser::PerlSAX;
 
 sub _process {
     my $self             = shift;
@@ -217,7 +266,7 @@ sub _add_type_constraint_and_coercion {
     my $self = shift;
     my $class_name = shift;
 
-    subtype $class_name, as "Object", where {$_->isa($class_name)};
+    subtype $class_name, as "Object", where {$_->isa($self->{perl_package} . $class_name)};
     subtype "ArrayOf" . $class_name, as "ArrayRef[$class_name]";
     coerce $class_name, from 'HashRef', via {
         $self->make_new(($_->{class} || $class_name), $_);
@@ -227,6 +276,8 @@ sub _add_type_constraint_and_coercion {
     coerce "ArrayOf$class_name", from "ArrayOfHashes", 
         via { [map {$self->make_new(($_->{class} || $class_name), $_)} @$_] };
 }
+
+use Moose::Meta::Class;
 
 # add fields from base classes to sub-classes so that $class_descriptor->fields()
 # returns fields from base classes too
@@ -243,6 +294,7 @@ sub _fix_class_descriptors {
             $cd->add_field($field);
         }
         $cd->_make_fields_into_attributes();
+        $cd->make_immutable;
     }
 }
 
@@ -277,9 +329,12 @@ sub _get_fields {
 sub get_classdescriptor_by_name {
     my $self      = shift;
     my $classname = shift;
+
     if ( !defined $classname ) {
         confess "no classname passed to get_classdescriptor_by_name()\n";
     }
+
+    $classname =~ s/.*:://;
 
     # These are always valid
     if ( $classname eq 'Integer' ) {

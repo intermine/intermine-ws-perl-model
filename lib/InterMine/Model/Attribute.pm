@@ -55,8 +55,8 @@ under the same terms as Perl itself.
 =cut
 use Moose;
 with (
-    'InterMine::Model::Role::Descriptor',
     'InterMine::Model::Role::Field',
+    'InterMine::Model::Role::Descriptor',
 );
 
 use MooseX::Types::Moose qw(Str Int Num Bool Value);

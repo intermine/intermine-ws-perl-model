@@ -39,6 +39,8 @@ use MooseX::Types::Moose qw(ArrayRef Str Bool);
 use Moose::Util::TypeConstraints;
 use Scalar::Util qw(refaddr blessed);
 
+use Carp qw(cluck);
+
 =head1 CLASS METHODS
 
 =head2 create( $name | $name, %attributes | $name, \%attributes | \%attributes )
@@ -64,8 +66,6 @@ model to build up the list of classes.
 
 =cut
 
-# Make class a synonym for meta in the instantiated object
-
 override create => sub {
     my $class = shift;
     my $ret = super;
@@ -77,19 +77,40 @@ override create => sub {
 
 =head2 name | package
 
-return the name of the class this class descriptor represents. Package
-is the attribute inherited from Moose::Meta::Class
+=over 4
 
- Usage   : $name = $cd->name();
- Function: Return the name of this class, eg. "Gene"
- Args    : none
+=item * unqualified_name
+
+returns the (unqualified) name of the class this class descriptor represents. 
+
+  $gene_meta->unqualified_name
+  # "Gene"
+
+=item * package
+
+This is the attribute inherited from Moose::Meta::Class, and returns the full
+qualified class name that perl refers to the class internally as.
+
+  $gene_meta->name
+  # InterMine::genomic::FlyMine::Gene
+
+=back 
 
 =cut
 
-has '+name' => (
-    lazy => 1,
-    default => sub { shift->package },
+has unqualified_name => (
+    isa => 'Str',
+    is  => 'ro',
+    init_arg => undef,
+    lazy_build => 1,
 );
+
+sub _build_unqualified_name {
+    my $self = shift;
+    my $p = $self->name;
+    $p =~ s/.*:://;
+    return $p;
+}
 
 =head2 own_fields
 
@@ -281,12 +302,6 @@ sub get_ancestors {
     return @inheritance_path;
 }
 
-has package => (
-    is      => 'ro',
-    isa     => Str,
-    default => sub { shift->name }
-);
-
 =head2 add_field(FieldDescriptor $field, Bool own)
 
 Add a field to the class. If there is already a field 
@@ -350,6 +365,18 @@ sub sub_class_of {
     }
   }
   return 0;
+}
+
+=head2 to_string
+
+The stringification of a class-descriptor. By default, it stringifies to its 
+unqualified_name.
+
+=cut 
+
+sub to_string {
+    my $self = shift;
+    return $self->unqualified_name;
 }
 
 1;

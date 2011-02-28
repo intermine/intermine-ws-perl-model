@@ -22,4 +22,6 @@ Revision history for InterMine-Model
           rather than a bundle of methods (InterMine::Model::Object).
         * Reimplemented some attributes as methods to save memory
         * Weakened some circular references to prevent leaks
-
+0.9603  Mon Feb 28 18:56:16 GMT 2011
+        * Made as much as possible immutable.
+        * Fixed bug with prevented instantiation of more than one model at a time.
