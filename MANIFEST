@@ -5,6 +5,7 @@ lib/InterMine/Model.pm
 lib/InterMine/Model/Attribute.pm
 lib/InterMine/Model/ClassDescriptor.pm
 lib/InterMine/Model/Collection.pm
+lib/InterMine/Model/Handler.pm
 lib/InterMine/Model/Object.pm
 lib/InterMine/Model/Reference.pm
 lib/InterMine/Model/Role/Descriptor.pm
@@ -21,7 +22,6 @@ t/01_model/01_field.t
 t/01_model/02_class.t
 t/01_model/02_class_instantiate.t
 t/01_model/03_model.t
-t/boilerplate.t
 t/data/testmodel_model.xml
 t/manifest.t
 t/pod-coverage.t

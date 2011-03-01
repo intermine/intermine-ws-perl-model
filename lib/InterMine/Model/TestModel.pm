@@ -12,7 +12,7 @@ my $model_file = dirname(__FILE__) . '/testmodel_model.xml';
 my $instance = __PACKAGE__->new;
 
 sub new {
-    return InterMine::Model->new(file => $model_file);
+    return InterMine::Model->new(source => $model_file, origin => "TestModel");
 }
 
 sub instance {

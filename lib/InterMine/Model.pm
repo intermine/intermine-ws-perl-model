@@ -1,147 +1,3 @@
-package InterMine::Model::Handler;
-
-=head1 NAME
-
-InterMine::Model::Handler - The SAX handler for reading in a model
-
-=head1 SYNOPSIS
-
-    use InterMine::Model; # you get the handler for free
-    use XML::Parser::PerlSAX;
-
-    my $handler = new InterMine::Model::Handler( model => $self );
-    my $parser = XML::Parser::PerlSAX->new( Handler => $handler );
-
-    my $source;
-
-    if ($source_is_string) {
-        $source = { String => $source_arg };
-    }
-    else {
-        $source = { SystemId => $source_arg };
-    }
-
-    $parser->parse( Source => $source );
-
-=head1 DESCRIPTION
-
-This in a class used internally for processing the xml representation of the model
-that is returned from webservices, and stored as a the model's serialised 
-representation. You will not need to use this class directly.
-
-=head1 SEE ALSO
-
-=over 4
-
-=item * L<XML::Parser::PerlSAX>
-
-=back
-
-=cut
-
-use strict;
-use warnings;
-
-use Carp qw/confess/;
-
-use InterMine::Model::Attribute;
-use InterMine::Model::Reference;
-use InterMine::Model::Collection;
-use InterMine::Model::ClassDescriptor;
-
-sub new {
-    my $class = shift;
-    my $self = ( @_ == 0 ) ? shift : {@_};
-
-    return bless $self, $class;
-}
-
-my $serial_no = 00;
-
-sub start_element {
-    my $self = shift;
-    my $args = shift;
-
-    $self->{current_element} = $args->{Name};
-
-    my $nameattr = $args->{Attributes}{name};
-
-    if ( $args->{Name} eq "model" ) {
-        $self->{model}{model_name} = $nameattr;
-        my $package_name = $args->{Attributes}{'package'};
-        $self->{model}{package_name} = $package_name;
-    }
-    else {
-        my $model = $self->{model};
-        if ( $args->{Name} eq "class" ) {
-            my $perl_package  = $self->{model}{perl_package} ||= join('::', 
-                "InterMine", $self->{model}{model_name}, ++$serial_no) . '::';
-            my @parents = ();
-            if ( exists $args->{Attributes}{extends} ) {
-                @parents = split /\s+/, $args->{Attributes}{extends};
-                @parents = grep { $_ ne 'java.lang.Object' } @parents;
-
-                # strip off any preceding package (eg. "org.intermine.")
-                map { s/.*\.(.*)/$1/ } @parents;
-            }
-            my $cd = InterMine::Model::ClassDescriptor->create(
-                $perl_package . $nameattr,
-                model   => $model,
-                parents => [ map {$perl_package . $_} @parents],
-            );
-            $model->{class_hash}{$nameattr} = $cd;
-            $self->{current_class} = $cd;
-        }
-        else {
-            my $field;
-            if ( $args->{Name} eq "attribute" ) {
-                my $type = $args->{Attributes}{type};
-                $field = InterMine::Model::Attribute->new(
-                    name  => $nameattr,
-                    type  => $type,
-                    model => $model
-                );
-            }
-            else {
-                my $referenced_type 
-                    = $args->{Attributes}{'referenced-type'};
-                my $reverse_reference 
-                    = $args->{Attributes}{'reverse-reference'};
-
-                my %args = (
-                    name                 => $nameattr,
-                    referenced_type_name => $referenced_type,
-                    model                => $model
-                );
-                $args{reverse_reference_name} = $reverse_reference
-                  if $reverse_reference;
-
-                if ( $args->{Name} eq "reference" ) {
-                    $field = InterMine::Model::Reference->new(%args);
-                }
-                elsif ( $args->{Name} eq "collection" ) {
-                    $field = InterMine::Model::Collection->new(%args);
-                }
-                else {
-                    confess "unexpected element: ", $args->{Name}, "\n";
-                }
-
-            }
-            $self->{current_class}->add_field( $field, 'own' );
-        }
-    }
-}
-
-sub end_element {
-    my $self = shift;
-    my $args = shift;
-    if ( $args->{Name} eq 'class' ) {
-        $self->{current_class} = undef;
-    }
-}
-
-1;
-
 package InterMine::Model;
 
 use strict;
@@ -150,10 +6,11 @@ use warnings;
 use Carp qw/confess/;
 use Moose::Util::TypeConstraints;
 use XML::Parser::PerlSAX;
+use InterMine::Model::Handler;
 
 use constant TYPE_PREFIX => "InterMine";
 
-our $VERSION = '0.9604';
+our $VERSION = '0.9605';
 
 =head1 NAME
 
@@ -185,54 +42,74 @@ InterMine::Model - the representation of an InterMine model
 =head1 DESCRIPTION
 
 The class is the Perl representation of an InterMine data model.  The
-new() method can parse the model file.  The
-get_classdescriptor_by_name() method will return an
+C<new()> method can parse the model file.  The
+C<get_classdescriptor_by_name()> method will return an
 InterMine::Model::ClassDescriptor object for the class with the given
-name.
+name, and the C<make_new()> method will return an instantiated object
+of the given class.
 
 For an example model see:
-http://trac.flymine.org/browser/trunk/intermine/objectstore/model/testmodel/testmodel_model.xml
+L<http://trac.flymine.org/browser/trunk/intermine/objectstore/model/testmodel/testmodel_model.xml>
 
-=head1 FUNCTIONS
+=head1 CLASS METHODS
 
 =cut
 
+=head2 new( %options )
 
-=head2 new
+Standard constructor - accepts key/value pairs. Possible options are:
 
- Title   : new
- Usage   : $model = new InterMine::Model(file => $model_file);
-             or
-           $model = new InterMine::Model(string => $model_string);
- Function: return a Model object for the given file
- Args    : file - the InterMine model XML file
+=over 4
+
+=item * source: the source of the xml 
+
+can be a ScalarRef, filehandle, filename, or string (or anything that overloads "")
+(tested in that order)
+
+=item * file: The file to load the model from 
+
+[deprecated - use source instead] 
+
+=item * string: A string containing the xml to load the model from 
+
+[deprecated - use source instead]
+
+=item * origin: Where this model comes from 
+
+usually a mine name - optional
+
+=back
 
 =cut
 
 sub new {
     my $class = shift;
     my %opts  = @_;
+
+    print join('=>', @_) if $ENV{DEBUG};
+
+    my $source = $opts{source} || $opts{file} || $opts{string}
+        or confess "No source passed to $class constructor";
+
     my $self  = {%opts};
 
-    if ( !defined $opts{file} && !defined $opts{string} ) {
-        confess "$class\::new() needs a file or string argument\n";
-    }
-    elsif ( defined $opts{file} && !-f $opts{file} ) {
-        confess "A valid file must be specified: we got $opts{file}\n";
-    }
-
-    $self->{class_hash} = {};
+    $self->{class_hash}   = {};
     $self->{object_cache} = {};
 
     bless $self, $class;
 
-    #my $self = Object::Destroyer->new($self, 'release');
+    { 
+        no warnings 'newline';
 
-    if ( defined $opts{file} ) {
-        $self->_process( $opts{file}, 0 );
-    }
-    else {
-        $self->_process( $opts{string}, 1 );
+        if      (ref $source eq 'SCALAR') {
+            $self->_process_string($$source);
+        } elsif (ref $source eq 'GLOB') {
+            $self->_process_string(join('', <$source>));
+        } elsif (-r $source || $opts{file}) {
+            $self->_process_file($source);
+        } else {
+            $self->_process_string("$source");
+        }
     }
 
     $self->_fix_class_descriptors();
@@ -240,6 +117,16 @@ sub new {
     return $self;
 }
 
+sub _process_string {
+    my ($self, $string) =  @_;
+    return $self->_process($string, 1);
+}
+
+sub _process_file {
+    my ($self, $filename) = @_;
+    -r $filename || confess "Cannot read model source file $filename. Aborting";
+    return $self->_process($filename, 0);
+}
 
 sub _process {
     my $self             = shift;
