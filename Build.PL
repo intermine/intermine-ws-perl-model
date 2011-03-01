@@ -6,7 +6,7 @@ my $build = Module::Build->new(
     dist_author   => 'Alex Kalderimis <dev@intermine.org>',
     dist_abstract => 'A class based representation of an InterMine DB schema',
     recursive_test_files => 1,
-    create_makefile_pl   => 'traditional',
+#    create_makefile_pl   => 'traditional', # No makefiles until the version of Test::More is sane
     requires             => {
         'perl'                          => '5.8.3',
         'Carp'                          => 0,
@@ -20,7 +20,7 @@ my $build = Module::Build->new(
     },
     build_requires => {
         'Test::Exception' => 0,
-        'Test::More'      => 0,
+        'Test::More'      => '>= 0.95, < 2.0',
     },
 );
 $build->add_build_element('xml');

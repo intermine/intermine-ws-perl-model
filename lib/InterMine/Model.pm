@@ -153,7 +153,7 @@ use XML::Parser::PerlSAX;
 
 use constant TYPE_PREFIX => "InterMine";
 
-our $VERSION = '0.9603';
+our $VERSION = '0.9604';
 
 =head1 NAME
 
