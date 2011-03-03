@@ -75,6 +75,8 @@ use InterMine::TypeLibrary qw(
     ClassDescriptor MaybeClassDescriptor MaybeField
 );
 
+use constant TAG_NAME => "reference";
+
 has referenced_type_name => (
     is	     => 'ro',
     isa	     => Str,
@@ -94,9 +96,9 @@ has referenced_classdescriptor => (
     isa => ClassDescriptor,
     lazy => 1,
     default => sub {
-	my $self      = shift;
-	my $type_name = $self->referenced_type_name();
-	return $self->model->get_classdescriptor_by_name($type_name);
+        my $self      = shift;
+        my $type_name = $self->referenced_type_name();
+        return $self->model->get_classdescriptor_by_name($type_name);
     },
 );
 
@@ -256,6 +258,24 @@ around '_get_moose_options' => sub {
     push @ops, (coerce => 1);
     return @ops;
 };
+
+=head2 to_xml
+
+The xml representation of the attribute descriptor
+
+=cut
+
+sub to_xml {
+    my $self = shift;
+    return sprintf(qq{<%s name="%s" referenced-type="%s" %s/>},
+        $self->TAG_NAME,
+        $self->name, 
+        $self->referenced_type_name,
+        ($self->reverse_reference_name 
+            ? 'reverse-reference="' . $self->reverse_reference_name . '"'
+            : ''),
+    );
+}
 
 __PACKAGE__->meta->make_immutable;
 no Moose;

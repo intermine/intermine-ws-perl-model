@@ -89,8 +89,7 @@ sub start_element {
 
     if ( $args->{Name} eq "model" ) {
         $self->{model}{model_name} = $nameattr;
-        my $package_name = $args->{Attributes}{'package'};
-        $self->{model}{package_name} = $package_name;
+        $self->{model}{package_name} = $args->{Attributes}{package};
     }
     else {
         my $model = $self->{model};
@@ -111,6 +110,7 @@ sub start_element {
                 $perl_package . $nameattr,
                 model   => $model,
                 parents => [ map {$perl_package . $_} @parents],
+                is_interface => ($args->{Attributes}{'is-interface'} eq 'true'),
             );
             $model->{class_hash}{$nameattr} = $cd;
             $self->{current_class} = $cd;

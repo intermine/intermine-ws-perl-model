@@ -22,6 +22,7 @@ t/01_model/01_field.t
 t/01_model/02_class.t
 t/01_model/02_class_instantiate.t
 t/01_model/03_model.t
+t/data/expected_model.xml
 t/data/testmodel_model.xml
 t/manifest.t
 t/pod-coverage.t

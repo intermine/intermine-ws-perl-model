@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 use Test::Exception;
 
 my $module = 'InterMine::Model';
@@ -45,3 +45,13 @@ is($testmodel->model_name, "testmodel", "Model also has the right name");
 # test 7
 is(scalar($testmodel->get_all_classdescriptors), 19, "Class count ok");
 
+subtest "Test serialisation" => sub {
+    local $/;
+    open(my $fh, '<', 't/data/expected_model.xml') or die "Horribly - $!";
+    chop(my $expected_model = <$fh>);
+    close $fh or die "In great agony - $!";
+
+    is($model->to_xml, $expected_model, "Can serialise to xml");
+    my $round_trip = new_ok($module => [source => $model->to_xml]);
+    is($round_trip->to_xml, $model->to_xml, "Round trips successfully");
+};

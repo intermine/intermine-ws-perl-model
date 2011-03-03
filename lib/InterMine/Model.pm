@@ -10,7 +10,7 @@ use InterMine::Model::Handler;
 
 use constant TYPE_PREFIX => "InterMine";
 
-our $VERSION = '0.9605';
+our $VERSION = '0.9606';
 
 =head1 NAME
 
@@ -354,6 +354,25 @@ sub package_name {
 sub model_name {
     my $self = shift;
     return $self->{model_name};
+}
+
+=head2 to_xml
+
+Returns a string containing an XML representation of the model.
+
+=cut
+
+sub to_xml {
+    my $self = shift;
+    my $xml = sprintf(qq{<model name="%s" package="%s">\n}, 
+        $self->model_name, $self->package_name);
+
+    for my $cd (sort($self->get_all_classdescriptors())) {
+        $xml .= q[ ] x 2 . $cd->to_xml . "\n";
+    }
+
+    $xml .= "</model>";
+    return $xml;
 }
 
 1;

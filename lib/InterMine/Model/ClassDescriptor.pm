@@ -112,6 +112,12 @@ sub _build_unqualified_name {
     return $p;
 }
 
+has is_interface => (
+    isa => 'Bool',
+    is  => 'ro',
+    default => 1,
+);
+
 =head2 own_fields
 
 Fields that belong to this class directly. 
@@ -136,6 +142,43 @@ sub add_own_field {
 sub get_own_fields {
     my $self = shift;
     return grep {$_->field_class eq $self} $self->fields;
+}
+
+=head3 own_attributes
+
+Return the fields that are instances of L<InterMine::Model::Attribute>. 
+This is not to be confused with L<Class::MOP>'s C<get_all_attributes>.
+
+=cut
+
+sub own_attributes {
+    my $self = shift;
+    return grep {$_->isa('InterMine::Model::Attribute')} $self->get_own_fields;
+}
+
+=head3 own_references
+
+Return all the fields that are instances of L<InterMine::Model::Reference>,
+but not the subclass L<InterMine::Model::Collection>.
+
+=cut
+
+sub own_references {
+    my $self = shift;
+    return grep {
+        $_->isa('InterMine::Model::Reference') && ! $_->isa('InterMine::Model::Collection')
+        } $self->get_own_fields;
+}
+
+=head3 own_collections
+
+Return all the fields that are instances of L<InterMine::Model::Collection>.
+
+=cut
+
+sub own_collections {
+    my $self = shift;
+    return grep {$_->isa('InterMine::Model::Collection')} $self->get_own_fields;
 }
 
 =head2 fieldhash
@@ -221,7 +264,12 @@ The names of the immediate ancestors of this class.
 has parents => (
     is	       => 'ro',
     isa	       => ArrayRef[Str],
+    traits     => ['Array'],
     auto_deref => 1,
+    handles    => {
+        has_parents => 'count',
+    },
+
 );
 
 =head2 parental_class_descriptors
@@ -377,6 +425,31 @@ unqualified_name.
 sub to_string {
     my $self = shift;
     return $self->unqualified_name;
+}
+
+=head2 to_xml
+
+Returns a string containing an XML representation of the descriptor
+
+=cut
+
+sub to_xml {
+    my $self = shift;
+    my $xml = sprintf(qq{<class name="%s"%s is-interface="%s">\n},
+        $self->unqualified_name, 
+        ($self->has_parents 
+            ? ' extends="' . join(q[ ], $self->parental_class_descriptors) . '"' 
+            : ''),
+        ($self->is_interface ? "true" : "false")
+    );
+    for my $field (
+        sort($self->own_attributes), 
+        sort($self->own_references), 
+        sort($self->own_collections)) {
+        $xml .= q[ ] x 4 . $field->to_xml . "\n";
+    }
+    $xml .= "  </class>";
+    return $xml;
 }
 
 1;

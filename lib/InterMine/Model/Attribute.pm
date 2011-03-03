@@ -64,7 +64,7 @@ use InterMine::TypeLibrary qw(BigInt);
 use InterMine::Model::Types qw(ISO8601DateStamp);
 
 has type => (
-    reader   => '_type',
+    reader   => 'java_type',
     isa	     => Str,
     required => 1,
 );
@@ -79,7 +79,7 @@ has type => (
 
 sub attribute_type {
     my $self = shift;
-    my $value = $self->_type;
+    my $value = $self->java_type;
     $value =~ s/.*\.//;
     return $value;
 }
@@ -113,6 +113,18 @@ sub _get_moose_options {
         push @options, (coerce => 1);
     }
     return @options;
+}
+
+=head2 to_xml
+
+The xml representation of the attribute descriptor
+
+=cut
+
+sub to_xml {
+    my $self = shift;
+    return sprintf(qq{<attribute name="%s" type="%s"/>},
+        $self->name, $self->java_type);
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -14,7 +14,7 @@ InterMine::Model::Role::Descriptor - Provides the common behaviour of descriptor
 use MooseX::Role::WithOverloading;
 use InterMine::TypeLibrary qw(Model);
 
-requires 'to_string';
+requires qw(to_string);
 
 =head1 OVERLOADING
 
@@ -24,6 +24,10 @@ requires 'to_string';
 
 Descriptors must implement a "to_string" method, which is 
 called when string overloading occurs.
+
+=item COMPARISON
+
+Descriptors sort according to their (uppercased) names
  
 =cut
 

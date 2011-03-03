@@ -58,6 +58,8 @@ package InterMine::Model::Collection;
 use Moose;
 extends 'InterMine::Model::Reference';
 
+use constant TAG_NAME => "collection";
+
 override '_get_moose_type' => sub {
     my $self = shift;
     return 'ArrayOf' . super;
@@ -70,11 +72,10 @@ override '_get_moose_options' => sub {
     my $get_method = "get" . ucfirst($self->name);
     $push_method =~ s/s$//;
     $get_method =~ s/s$//;
+    $get_method .= "ByIndex";
     my $handles = {};
     $handles->{$push_method} = "push";
-
-    # Don't set individual getter if it would conflict with the main one
-    $handles->{$get_method} = "get" unless ("get" . ucfirst($self->name) eq $get_method);
+    $handles->{$get_method} = "get";
 
     push @ops, (
         traits => ['Array'], 
