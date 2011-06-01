@@ -32,7 +32,7 @@ use Moose;
 extends qw/Moose::Meta::Class/;
 with 'InterMine::Model::Role::Descriptor';
 
-use InterMine::TypeLibrary qw(
+use InterMine::Model::Types qw(
     FieldHash ClassDescriptorList ClassDescriptor BigInt
 );
 use MooseX::Types::Moose qw(ArrayRef Str Bool);
@@ -413,6 +413,24 @@ sub sub_class_of {
     }
   }
   return 0;
+}
+
+=head2 superclass_of($other)
+
+Returns true if this class is a superclass of the other one, or if it 
+is the same class.
+
+=cut
+
+sub superclass_of {
+    my $self = shift;
+    my $other = shift;
+
+    if (blessed $other and $other->isa(__PACKAGE__)) {
+        return $other->sub_class_of($self);
+    } else {
+        return $self->model->get_classdescriptor_by_name($other)->sub_class_of($self);
+    }
 }
 
 =head2 to_string

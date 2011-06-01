@@ -16,7 +16,7 @@ name: InterMine-Model
 provides:
   InterMine::Model:
     file: lib/InterMine/Model.pm
-    version: 0.9607
+    version: 0.9700
   InterMine::Model::Attribute:
     file: lib/InterMine/Model/Attribute.pm
   InterMine::Model::ClassDescriptor:
@@ -39,7 +39,6 @@ provides:
     file: lib/InterMine/Model/Types.pm
 requires:
   Carp: 0
-  InterMine::TypeLibrary: 0.9600
   Moose: 0.95
   Moose::Util::TypeConstraints: 0
   MooseX::Role::WithOverloading: 0
@@ -49,4 +48,4 @@ requires:
   perl: v5.8.3
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.9607
+version: 0.9700
