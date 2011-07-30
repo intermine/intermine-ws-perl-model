@@ -34,6 +34,7 @@
             "MooseX::Types" : 0,
             "Scalar::Util" : 0,
             "Time::HiRes" : 0,
+            "XML::Parser::Expat" : 0,
             "XML::Parser::PerlSAX" : "0.08",
             "perl" : "v5.8.3"
          }
@@ -42,7 +43,7 @@
    "provides" : {
       "InterMine::Model" : {
          "file" : "lib/InterMine/Model.pm",
-         "version" : "0.9801"
+         "version" : "0.9802"
       },
       "InterMine::Model::Attribute" : {
          "file" : "lib/InterMine/Model/Attribute.pm",
@@ -91,5 +92,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.9801"
+   "version" : "0.9802"
 }
