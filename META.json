@@ -43,7 +43,7 @@
    "provides" : {
       "InterMine::Model" : {
          "file" : "lib/InterMine/Model.pm",
-         "version" : "0.9803"
+         "version" : "0.9804"
       },
       "InterMine::Model::Attribute" : {
          "file" : "lib/InterMine/Model/Attribute.pm",
@@ -92,5 +92,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.9803"
+   "version" : "0.9804"
 }
