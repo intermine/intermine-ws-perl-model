@@ -386,6 +386,14 @@ sub _make_fields_into_attributes {
     my $self   = shift;
     my @fields = $self->fields;
 
+    $self->add_attribute("__fetched_fields", {
+        isa => 'HashRef',
+        traits => ['Hash'],
+        is => 'ro',
+        default => sub { {} },
+        handles => {__has_fetched => 'get'},
+    });
+
     for my $field (@fields) {
         my $suffix = ucfirst($field->name);
         my $get = $field->_type_is(Bool) ? 'is' : 'get';
@@ -402,19 +410,18 @@ sub _make_fields_into_attributes {
         }
 
         $self->add_attribute($field->name, $options);
-        my $been_fetched = undef;
         $self->add_method($field->name, sub { my $obj = shift; 
             my $reader = $get . $suffix; 
             my $writer = "set" . $suffix;
             my $is_empty = $field->name . "_is_empty";
-            if (not ($been_fetched)
+            if (not ($obj->__has_fetched($field->name))
                 and ( 
-                     ($field->isa("InterMine::Model::Reference")  and (not defined $obj->$reader))
-                  or ($field->isa("InterMine::Model::Collection") and ($obj->$is_empty))
+                        ($field->isa("InterMine::Model::Collection") and ($obj->$is_empty))
+                    or  (not defined $obj->$reader)
                 )) {
                 my $fetched = $self->model->lazy_fetch($self, $field, $obj);
                 $obj->$writer($fetched) if $fetched;
-                $been_fetched = 1;
+                $obj->__fetched_fields->{$field->name} = 1;
             }
             $obj->$reader;
         });

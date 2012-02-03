@@ -45,3 +45,6 @@ Revision history for InterMine-Model
 0.9801  Finally got boolean fields to get readers prefixed with 'is'. Also, unprefixed accessors for convenience.
 0.9802  Dependency bug fix in response to cpantesters report
 0.9803  Accept underscores in path names.
+0.9900  Added hooks to allow lazily fetching objects to exist, independent of implementation
+0.9901  Fri Feb  3 11:51:02 GMT 2012
+        Fixed bug with closed over flag in ClassDescriptor. Changed to instance attribute.
