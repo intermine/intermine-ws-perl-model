@@ -43,7 +43,7 @@
    "provides" : {
       "InterMine::Model" : {
          "file" : "lib/InterMine/Model.pm",
-         "version" : "0.9903"
+         "version" : "0.9904"
       },
       "InterMine::Model::Attribute" : {
          "file" : "lib/InterMine/Model/Attribute.pm",
@@ -59,7 +59,7 @@
       },
       "InterMine::Model::Handler" : {
          "file" : "lib/InterMine/Model/Handler.pm",
-         "version" : 0
+         "version" : 0         
       },
       "InterMine::Model::Object" : {
          "file" : "lib/InterMine/Model/Object.pm",
